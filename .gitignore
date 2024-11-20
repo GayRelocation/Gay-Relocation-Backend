@@ -1,0 +1,9 @@
+*.pyc
+.DS_Store
+backup
+*.env
+Data
+env
+__pycache__/
+Raw_Blog_Data
+test.py
