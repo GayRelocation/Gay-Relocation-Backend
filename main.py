@@ -1,3 +1,4 @@
+import json
 from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
@@ -31,3 +32,10 @@ class QueryRequest(BaseModel):
 async def handle_query(request: QueryRequest):
     result = query_rag(request.query)
     return result
+
+
+@app.post("/comparison")
+def handle_comparison():
+    with open('sample_data.json') as f:
+        test_data = json.load(f)
+    return test_data
