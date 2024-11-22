@@ -1,6 +1,6 @@
 import sqlite3
 
-db_url = "Data/data.db"
+db_url = "data.db"
 
 
 def fetch_blogs(document_ids: list[str]) -> dict:
