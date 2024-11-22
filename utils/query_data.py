@@ -98,14 +98,16 @@ def format_file_reference(reference):
 **Page no**: `{display_page}`   **Line no**: `{display_line}`
 """
 
+
 class QueryRequest(BaseModel):
     city_1: str
     city_2: str
-    
+
+
 def query_rag(request: QueryRequest):
     # Prepare the DB.
     city_1, city_2 = request.city_1, request.city_2
-    
+
     db = Chroma(
         persist_directory=CHROMA_PATH,
         embedding_function=get_embedding_function()
@@ -117,13 +119,10 @@ def query_rag(request: QueryRequest):
     if len(results) == 0 or results[0][1] < 0.9:
         query_text = f"From {city_1} to {city_2}: LGBTQ+ Cities"
         results = db.similarity_search_with_relevance_scores(query_text, k=3)
-    
+
     if len(results) == 0:
-        return {"lgbtq-resources": "No relevant resources found."}    
-    
-    
-        
-    
+        return {"lgbtq-resources": "No relevant resources found."}
+
     sources = []
     for doc, score in results:
         if score < 0.9:
@@ -163,6 +162,6 @@ def query_rag(request: QueryRequest):
     response_text = completion.choices[0].message.parsed.response
 
     return {
-        "lgbtq-resources": response_text,  # Return the response text
+        "lgbtq_resources": response_text,  # Return the response text
         "sources": sources,  # Add the sources for traceability
     }
