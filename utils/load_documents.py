@@ -7,7 +7,7 @@ def load_documents(data_path: str) -> list[Document]:
     Load documents from a data source. Here, we assume a simple structure
     where each file is JSON with 'id' and 'title'.
     """
-    data_path = os.path.join(os.path.dirname(__file__), '..', 'Filtered', data_path)
+    data_path = os.path.join(os.path.dirname(__file__), '..', 'Data', "Blogs", data_path)
     documents = []
     with open(data_path, "r") as file:
         data = json.load(file)

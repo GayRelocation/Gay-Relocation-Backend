@@ -10,9 +10,9 @@ from typing import List
 
 
 class Resource(BaseModel):
-    short_title: str
-    short_description: str
-    content: list[str]
+    title: str
+    description: str
+    strings: list[str]
 
 
 class ResourceResponse(BaseModel):
@@ -42,7 +42,7 @@ You are tasked with finding and listing resources related to LGBTQ+ support serv
 - **Read the context carefully.**
 - **Provide a list of resources based on the query provided, using only the information from the context.**
 - Each resource should include:
-  - A **title**: a short string that describes the resource as title.
+  - A **title**: a very short string that describes the resource as title.
   - A **description**: a short description with useful piece of information about the resource.
 - There should be at least 4 resources with atleast 4 strings in content in the list.
 - **Provide as many resources as you can find based on the context.**
@@ -147,6 +147,6 @@ def query_rag(query_text: str):
     response_text = completion.choices[0].message.parsed.response
 
     return {
-        "response": response_text,  # Return the response text
+        "lgbtq-resources": response_text,  # Return the response text
         "sources": sources,  # Add the sources for traceability
     }

@@ -1,118 +1,6 @@
 {
-    "lgbtq-resources": [
-        {
-            "title": "LGBTQ+ Health Services",
-            "description": "Comprehensive healthcare services tailored for the LGBTQ+ community.",
-            "strings": [
-                "San Francisco AIDS Foundation",
-                "Lyon-Martin Health Services",
-                "UCSF Gender Affirming Health Program",
-                "SF Community Health Center"
-            ]
-        },
-        {
-            "title": "LGBTQ+ Health Services",
-            "description": "Comprehensive healthcare services tailored for the LGBTQ+ community.",
-            "strings": [
-                "San Francisco AIDS Foundation",
-                "Lyon-Martin Health Services",
-                "UCSF Gender Affirming Health Program",
-                "SF Community Health Center"
-            ]
-        },
-        {
-            "title": "LGBTQ+ Community Centers",
-            "description": "Spaces offering support, resources, and social connections.",
-            "strings": [
-                "SF LGBT Center",
-                "GLBT Historical Society Museum",
-                "The LGBTQ+ Youth Space",
-                "Openhouse (for LGBTQ+ seniors)"
-            ]
-        },
-        {
-            "title": "Legal Support & Advocacy",
-            "description": "Organizations providing legal assistance and advocacy for LGBTQ+ rights.",
-            "strings": [
-                "National Center for Lesbian Rights",
-                "Transgender Law Center",
-                "BALIF (Bay Area Lawyers for Individual Freedom)",
-                "Our Family Coalition (for LGBTQ+ families)"
-            ]
-        },
-        {
-            "title": "LGBTQ+ Inclusive Education",
-            "description": "Educational institutions and programs with strong LGBTQ+ support.",
-            "strings": [
-                "GLSEN Bay Area Chapter",
-                "SF State University LGBTQ Studies Department",
-                "Out in Tech - SF Chapter",
-                "Lavender Youth Recreation & Information Center (LYRIC)"
-            ]
-        },
-        {
-            "title": "LGBTQ+ Events & Celebrations",
-            "description": "Major events and celebrations in the LGBTQ+ community.",
-            "strings": [
-                "San Francisco Pride Parade & Celebration",
-                "Frameline - SF International LGBTQ+ Film Festival",
-                "Fresh Meat Festival (transgender and queer performance)",
-                "Folsom Street Fair"
-            ]
-        },
-        {
-            "title": "Support & Social Groups",
-            "description": "Groups offering peer support and social connections.",
-            "strings": [
-                "PFLAG San Francisco",
-                "API Equality - Northern California",
-                "El/La Para TransLatinas",
-                "Black Brothers Esteem"
-            ]
-        },
-        {
-            "title": "LGBTQ+ Employment Resources",
-            "description": "Organizations supporting LGBTQ+ individuals in the workplace.",
-            "strings": [
-                "Out & Equal Workplace Advocates",
-                "StartOut (for LGBTQ+ entrepreneurs)",
-                "SF LGBT Chamber of Commerce",
-                "Trans Employment Program (TEEI)"
-            ]
-        },
-        {
-            "title": "Government LGBTQ+ Initiatives",
-            "description": "Official city programs and services for the LGBTQ+ community.",
-            "strings": [
-                "SF Office of Transgender Initiatives",
-                "SF Human Rights Commission - LGBTQI Division",
-                "SFPD LGBTQ Liaison",
-                "SF Department of Public Health - LGBTQ Health Equity"
-            ]
-        },
-        {
-            "title": "LGBTQ+ Housing Resources",
-            "description": "Housing assistance and communities for LGBTQ+ individuals.",
-            "strings": [
-                "Openhouse LGBTQ Senior Housing",
-                "SF LGBT Community Center Housing Program",
-                "Larkin Street Youth Services (LGBTQ+ youth housing)",
-                "Jazzie's Place (LGBTQ adult shelter)"
-            ]
-        },
-        {
-            "title": "LGBTQ+ Nightlife & Entertainment",
-            "description": "Popular LGBTQ+ bars, clubs, and entertainment venues.",
-            "strings": [
-                "The Castro district (numerous LGBTQ+ venues)",
-                "Oasis",
-                "Beaux",
-                "El Rio"
-            ]
-        }
-    ],
     "city_1": {
-        "name": "San Francisco",
+        "name": "",
         "data": {
             "Home Price": "$1,200,000",
             "Property Tax": "0.6%",
@@ -137,7 +25,7 @@
         }
     },
     "city_2": {
-        "name": "Madison",
+        "name": "",
         "data": {
             "Home Price": "$578,100",
             "Property Tax": "0.7%",

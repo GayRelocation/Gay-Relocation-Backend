@@ -25,17 +25,24 @@ app.add_middleware(
 
 
 class QueryRequest(BaseModel):
-    query: str
+    city_1: str
+    city_2: str
 
 
-@app.post("/query")
-async def handle_query(request: QueryRequest):
-    result = query_rag(request.query)
-    return result
+def sample_data(city_1: str, city_2: str):
+    with open('sample_data.json') as f:
+        test_data = json.load(f)
+    test_data['city_1']['name'] = city_1
+    test_data['city_2']['name'] = city_2
+    return test_data
 
 
 @app.post("/comparison")
-def handle_comparison():
-    with open('sample_data.json') as f:
-        test_data = json.load(f)
-    return test_data
+async def handle_query(request: QueryRequest):
+    prompt = "Resources for the LGBTQ+ only for city " + request.city_2
+    result = query_rag(prompt)
+    data = sample_data(request.city_1, request.city_2)
+    return {
+        **data,
+        **result
+    }
