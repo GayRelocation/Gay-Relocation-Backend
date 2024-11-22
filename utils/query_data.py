@@ -98,19 +98,35 @@ def format_file_reference(reference):
 **Page no**: `{display_page}`   **Line no**: `{display_line}`
 """
 
-
-def query_rag(query_text: str):
+class QueryRequest(BaseModel):
+    city_1: str
+    city_2: str
+    
+def query_rag(request: QueryRequest):
     # Prepare the DB.
+    city_1, city_2 = request.city_1, request.city_2
+    
     db = Chroma(
         persist_directory=CHROMA_PATH,
         embedding_function=get_embedding_function()
     )
 
     # Search the DB.
-    results = db.similarity_search_with_relevance_scores(query_text, k=2)
+    query_text = "Resources for the LGBTQ+ Community in" + city_2
+    results = db.similarity_search_with_relevance_scores(query_text, k=3)
+    if len(results) == 0 or results[0][1] < 0.9:
+        query_text = f"From {city_1} to {city_2}: LGBTQ+ Cities"
+        results = db.similarity_search_with_relevance_scores(query_text, k=3)
+    
+    if len(results) == 0:
+        return {"lgbtq-resources": "No relevant resources found."}    
+    
+    
+        
+    
     sources = []
     for doc, score in results:
-        if score < 0.8:
+        if score < 0.9:
             continue  # Skip low-relevance scores
         sources.append({
             "id": doc.metadata.get("id", "unknown"),

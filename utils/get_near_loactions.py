@@ -1,37 +1,53 @@
-
-
 import requests
 from dotenv import load_dotenv
 import os
+
+# Load environment variables
 load_dotenv()
 
-
+# Fetch the API key
 api_key = os.getenv("RAPID_API_KEY")
 
-place_id = "3281278"
-url = f"https://wft-geo-db.p.rapidapi.com/v1/geo/places/{place_id}/nearbyPlaces"
+# Function to fetch nearby places
+def get_nearby_places(place_id):
+    if not api_key:
+        raise Exception("RAPID_API_KEY not found in environment variables.")
 
-# Query parameters for filtering (optional)
-querystring = {
-    "radius": "100",          # Radius in kilometers
-    "minPopulation": "100000",  # Minimum population for nearby cities
-    "limit": "10"             # Maximum number of cities to return
-}
+    url = f"https://wft-geo-db.p.rapidapi.com/v1/geo/places/{place_id}/nearbyPlaces"
 
-# Headers for the API request
-headers = {
-    "x-rapidapi-key": api_key,
-    "x-rapidapi-host": "wft-geo-db.p.rapidapi.com"
-}
+    querystring = {
+        "radius": "100",  # Search radius in kilometers
+        "minPopulation": "10000",  # Minimum population filter
+        "limit": "10"  # Limit the number of results
+    }
 
-# Making the GET request
-response = requests.get(url, headers=headers, params=querystring)
+    headers = {
+        "x-rapidapi-key": api_key,
+        "x-rapidapi-host": "wft-geo-db.p.rapidapi.com"
+    }
 
-# Checking if the request was successful
-if response.status_code == 200:
-    # Parsing the JSON response
-    cities = response.json().get('data', [])
-    for city in cities:
-        print(city.get('name'), end=', ')
-else:
-    print(f"Error: {response.status_code} - {response.text}")
+    try:
+        response = requests.get(url, headers=headers, params=querystring)
+
+        if response.status_code == 200:
+            cities = response.json().get('data', [])
+            if not cities:
+                print("No cities found within the specified radius.")
+                return []
+            # Print formatted results
+            for city in cities:
+                print(f"City: {city.get('name')}, Country: {city.get('country')}, Population: {city.get('population')}, Distance: {city.get('distance')}")
+            return cities
+        else:
+            raise Exception(f"Error: {response.status_code} - {response.text}")
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {e}")
+        return []
+
+# Example usage
+if __name__ == "__main__":
+    place_id = "YOUR_PLACE_ID"  # Replace with a valid place_id
+    try:
+        get_nearby_places(place_id)
+    except Exception as e:
+        print(e)

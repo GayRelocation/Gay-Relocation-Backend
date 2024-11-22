@@ -7,6 +7,10 @@
         "name": "Quality of Life",
         "value": "80%"
     },
+    "housing_affordability": {
+        "name": "Housing Affordability",
+        "value": "70%"
+    },
     "job_market_strength": {
         "name": "Job Market Strength",
         "value": "65%"
