@@ -1,38 +1,110 @@
 {
-    "overall_move_score": { "name": "Overall Move Score", "value": "87%" },
-    "quality_of_life": { "name": "Quality of Life", "value": "80%" },
-    "job_market_strength": { "name": "Job Market Strength", "value": "65%" },
-    "living_affordability": { "name": "Living Affordability", "value": "55%" },
+    "overall_move_score": {
+        "name": "Overall Move Score",
+        "value": "87%"
+    },
+    "quality_of_life": {
+        "name": "Quality of Life",
+        "value": "80%"
+    },
+    "job_market_strength": {
+        "name": "Job Market Strength",
+        "value": "65%"
+    },
+    "living_affordability": {
+        "name": "Living Affordability",
+        "value": "55%"
+    },
     "city_1": {
         "name": "",
         "data": {
             "Housing Availability": [
-                { "name": "Home Price", "value": "$1,200,000" },
-                { "name": "Property Tax", "value": "0.6%" },
-                { "name": "Home Appreciation Rate", "value": "5.2%" },
-                { "name": "Price Per Square Foot", "value": "$1,000" }
+                {
+                    "name": "Home Price",
+                    "value": "$1,200,000"
+                },
+                {
+                    "name": "Property Tax",
+                    "value": "0.6%"
+                },
+                {
+                    "name": "Home Appreciation Rate",
+                    "value": "5.2%"
+                },
+                {
+                    "name": "Price Per Square Foot",
+                    "value": "$1,000"
+                }
             ],
             "Quality of Life": [
-                { "name": "Education", "value": "60" },
-                { "name": "Healthcare + Fitness", "value": "64" },
-                { "name": "Weather Grade", "value": "61" },
-                { "name": "Air Quality Index", "value": "51" },
-                { "name": "Commute / Transit Score", "value": "53" },
-                { "name": "Accessibility", "value": "70" },
-                { "name": "Culture/Entertainment", "value": "66" }
+                {
+                    "name": "Education",
+                    "value": "60"
+                },
+                {
+                    "name": "Healthcare + Fitness",
+                    "value": "64"
+                },
+                {
+                    "name": "Weather Grade",
+                    "value": "61"
+                },
+                {
+                    "name": "Air Quality Index",
+                    "value": "51"
+                },
+                {
+                    "name": "Commute / Transit Score",
+                    "value": "53"
+                },
+                {
+                    "name": "Accessibility",
+                    "value": "70"
+                },
+                {
+                    "name": "Culture/Entertainment",
+                    "value": "66"
+                }
             ],
             "Job Market Strength": [
-                { "name": "Unemployment Rate", "value": "5.2%" },
-                { "name": "Recent Job Growth", "value": "0.15%" },
-                { "name": "Future Job Growth Index", "value": "74" },
-                { "name": "Median Household Income", "value": "$62.93K" }
+                {
+                    "name": "Unemployment Rate",
+                    "value": "5.2%"
+                },
+                {
+                    "name": "Recent Job Growth",
+                    "value": "0.15%"
+                },
+                {
+                    "name": "Future Job Growth Index",
+                    "value": "74"
+                },
+                {
+                    "name": "Median Household Income",
+                    "value": "$62.93K"
+                }
             ],
             "Living Affordability": [
-                { "name": "State Income Tax", "value": "9.3%" },
-                { "name": "Utilities", "value": "46" },
-                { "name": "Food / Groceries", "value": "57" },
-                { "name": "Sales Tax", "value": "9.5%" },
-                { "name": "Transportation Cost", "value": "80" }
+                {
+                    "name": "State Income Tax",
+                    "value": "9.3%"
+                },
+                {
+                    "name": "Utilities",
+                    "value": "46"
+                },
+                {
+                    "name": "Food / Groceries",
+                    "value": "57"
+                },
+                {
+                    "name": "Sales Tax",
+                    "value": "9.5%"
+                },
+                {
+                    "name": "Transportation Cost",
+                    "value": "80"
+                }
             ]
         }
     },
@@ -40,32 +112,92 @@
         "name": "",
         "data": {
             "Housing Availability": [
-                { "name": "Home Price", "value": "$578,100" },
-                { "name": "Property Tax", "value": "0.7%" },
-                { "name": "Home Appreciation Rate", "value": "2.8%" },
-                { "name": "Price Per Square Foot", "value": "$367" }
+                {
+                    "name": "Home Price",
+                    "value": "$578,100"
+                },
+                {
+                    "name": "Property Tax",
+                    "value": "0.7%"
+                },
+                {
+                    "name": "Home Appreciation Rate",
+                    "value": "2.8%"
+                },
+                {
+                    "name": "Price Per Square Foot",
+                    "value": "$367"
+                }
             ],
             "Quality of Life": [
-                { "name": "Education", "value": "80" },
-                { "name": "Healthcare + Fitness", "value": "75" },
-                { "name": "Weather Grade", "value": "78" },
-                { "name": "Air Quality Index", "value": "72" },
-                { "name": "Commute / Transit Score", "value": "70" },
-                { "name": "Accessibility", "value": "85" },
-                { "name": "Culture/Entertainment", "value": "90" }
+                {
+                    "name": "Education",
+                    "value": "80"
+                },
+                {
+                    "name": "Healthcare + Fitness",
+                    "value": "75"
+                },
+                {
+                    "name": "Weather Grade",
+                    "value": "78"
+                },
+                {
+                    "name": "Air Quality Index",
+                    "value": "72"
+                },
+                {
+                    "name": "Commute / Transit Score",
+                    "value": "70"
+                },
+                {
+                    "name": "Accessibility",
+                    "value": "85"
+                },
+                {
+                    "name": "Culture/Entertainment",
+                    "value": "90"
+                }
             ],
             "Job Market Strength": [
-                { "name": "Unemployment Rate", "value": "3.4%" },
-                { "name": "Recent Job Growth", "value": "2.5%" },
-                { "name": "Future Job Growth Index", "value": "85" },
-                { "name": "Median Household Income", "value": "$112.45K" }
+                {
+                    "name": "Unemployment Rate",
+                    "value": "3.4%"
+                },
+                {
+                    "name": "Recent Job Growth",
+                    "value": "2.5%"
+                },
+                {
+                    "name": "Future Job Growth Index",
+                    "value": "85"
+                },
+                {
+                    "name": "Median Household Income",
+                    "value": "$112.45K"
+                }
             ],
             "Living Affordability": [
-                { "name": "State Income Tax", "value": "4.4%" },
-                { "name": "Utilities", "value": "36" },
-                { "name": "Food / Groceries", "value": "46" },
-                { "name": "Sales Tax", "value": "8.5%" },
-                { "name": "Transportation Cost", "value": "46" }
+                {
+                    "name": "State Income Tax",
+                    "value": "4.4%"
+                },
+                {
+                    "name": "Utilities",
+                    "value": "36"
+                },
+                {
+                    "name": "Food / Groceries",
+                    "value": "46"
+                },
+                {
+                    "name": "Sales Tax",
+                    "value": "8.5%"
+                },
+                {
+                    "name": "Transportation Cost",
+                    "value": "46"
+                }
             ]
         }
     }

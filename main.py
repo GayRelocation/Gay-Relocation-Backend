@@ -15,13 +15,11 @@ app = FastAPI()
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Define the request model
 
 
 class QueryRequest(BaseModel):
@@ -41,6 +39,10 @@ def sample_data(city_1: str, city_2: str):
 async def handle_query(request: QueryRequest):
     prompt = "Resources for the LGBTQ+ only for city " + request.city_2
     result = query_rag(prompt)
+    result['heading'] = {
+        "title": "BIG MOVE!",
+        "description": f"A move from {request.city_1} to {request.city_2} covers a significant distance. This move would bring substantial changes in cost of living, climate, and urban environment."
+    }
     data = sample_data(request.city_1, request.city_2)
     return {
         **data,
