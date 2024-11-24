@@ -9,11 +9,10 @@ api_key = os.getenv("RAPID_API_KEY")
 
 
 def get_city_place_id(city_name):
-    url = "https://wft-geo-db.p.rapidapi.com/v1/geo/cities?countryIds=US&&types=CITY"
+    url = "https://wft-geo-db.p.rapidapi.com/v1/geo/cities?types=CITY&countryIds=IN"
 
     querystring = {
         "namePrefix": city_name,
-        "limit": "5"
     }
     headers = {
         "x-rapidapi-key": api_key,

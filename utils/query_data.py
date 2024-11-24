@@ -2,7 +2,6 @@
 from langchain_chroma import Chroma
 from langchain.prompts import ChatPromptTemplate
 from openai import OpenAI
-
 from get_embedding_function import get_embedding_function
 from utils.get_blogs import fetch_blogs
 from pydantic import BaseModel
@@ -99,14 +98,7 @@ def format_file_reference(reference):
 """
 
 
-class QueryRequest(BaseModel):
-    city_1: str
-    city_2: str
-
-
-def query_rag(request: QueryRequest):
-    # Prepare the DB.
-    city_1, city_2 = request.city_1, request.city_2
+def query_rag(from_city, to_city):
 
     db = Chroma(
         persist_directory=CHROMA_PATH,
@@ -114,10 +106,10 @@ def query_rag(request: QueryRequest):
     )
 
     # Search the DB.
-    query_text = "Resources for the LGBTQ+ Community in" + city_2
+    query_text = "Resources for the LGBTQ+ Community in" + to_city
     results = db.similarity_search_with_relevance_scores(query_text, k=3)
     if len(results) == 0 or results[0][1] < 0.9:
-        query_text = f"From {city_1} to {city_2}: LGBTQ+ Cities"
+        query_text = f"From {from_city} to {to_city}: LGBTQ+ Cities"
         results = db.similarity_search_with_relevance_scores(query_text, k=3)
 
     if len(results) == 0:

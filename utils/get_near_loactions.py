@@ -17,8 +17,7 @@ def get_nearby_places(place_id):
 
     querystring = {
         "radius": "100",  # Search radius in kilometers
-        "minPopulation": "10000",  # Minimum population filter
-        "limit": "10"  # Limit the number of results
+        "minPopulation": "100000",  # Minimum population filter
     }
 
     headers = {
