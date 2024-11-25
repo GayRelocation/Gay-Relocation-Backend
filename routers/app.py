@@ -231,6 +231,9 @@ async def get_similar_posts(
     """
     if not city:
         raise HTTPException(status_code=400, detail="Search term is required.")
+    
+    # replace space with + for the search query
+    city = city.replace(" ", "+")
 
     data = requests.get(
         f"https://www.gayrealestate.com/blog/wp-json/wp/v2/posts?search={city}").json()
