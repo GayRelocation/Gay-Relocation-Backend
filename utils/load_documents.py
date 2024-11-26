@@ -20,3 +20,24 @@ def load_documents(data_path: str) -> list[Document]:
 
     print(f"Loaded {len(documents)} documents.")
     return documents
+
+
+def load_news() -> list[Document]:
+    """
+    Load documents from a data source. Here, we assume a simple structure
+    where each file is JSON with 'id' and 'title'.
+    """
+    data_path = os.path.join(os.path.dirname(__file__), '..', 'Data', "News", "search.json")
+    
+    with open(data_path, "r") as file:
+        data = json.load(file)
+        documents = []
+        for item in data:
+            doc = Document(
+                page_content=item["name"],
+                metadata={"url": item["url"]}
+            )
+            documents.append(doc)
+            
+    print(f"Loaded {len(documents)} documents.")
+    return documents

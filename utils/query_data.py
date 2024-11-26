@@ -3,9 +3,10 @@ from langchain_chroma import Chroma
 from langchain.prompts import ChatPromptTemplate
 from openai import OpenAI
 from get_embedding_function import get_embedding_function
-from utils.get_blogs import fetch_blogs
+from utils.get_blogs import fetch_blogs, filter_blogs
 from pydantic import BaseModel
 from typing import List
+from utils.constants import CHROMA_PATH, BLOGS_COLLECTION
 
 
 class Resource(BaseModel):
@@ -29,12 +30,11 @@ sample_json = {
     ]
 }
 
-CHROMA_PATH = "chroma"
 
 PROMPT_TEMPLATE = """
 **Task Description:**
 
-You are tasked with finding and listing resources related to LGBTQ+ support services, based on the provided context. The context consists of blogs that contain information on various LGBTQ+ topics and resources.
+You are tasked with finding and listing resources related to LGBTQ+ support services, based on the provided context. The context consists of blogs that contain information on various LGBTQ+ topics and resources. If context is not provided, please generate the response based on your own knowledge.
 
 **Instructions:**
 
@@ -102,11 +102,13 @@ def query_rag(from_city, to_city):
 
     db = Chroma(
         persist_directory=CHROMA_PATH,
-        embedding_function=get_embedding_function()
+        embedding_function=get_embedding_function(),
+        collection_name=BLOGS_COLLECTION
     )
 
     # Search the DB.
     query_text = "Resources for the LGBTQ+ Community in" + to_city
+    temperature = 0.2
     results = db.similarity_search_with_relevance_scores(query_text, k=3)
     if len(results) == 0 or results[0][1] < 0.9:
         query_text = f"From {from_city} to {to_city}: LGBTQ+ Cities"
@@ -128,11 +130,16 @@ def query_rag(from_city, to_city):
     # Fetch blogs based on source IDs
     blog_ids = [source["id"] for source in sources]
     blogs = fetch_blogs(blog_ids)
+    blogs = filter_blogs(blogs)
 
     # Create the context text for the prompt
     context_text = "\n\n---\n\n".join(
         [f"title: {blog['title']}\ndescription: {blog['description']}" for blog in blogs]
     )
+
+    if len(blogs) == 0:
+        context_text = "No relevant blogs found, in the database. Please use your own knowledge to generate the response."
+        temperature = 0.8
 
     # Format the prompt using the template
     prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
@@ -147,7 +154,7 @@ def query_rag(from_city, to_city):
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}],
         response_format=ResourceResponse,
-        temperature=0.5
+        temperature=temperature
     )
 
     # Parse the response into the expected Resource format

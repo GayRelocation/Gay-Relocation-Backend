@@ -7,14 +7,15 @@ from langchain_chroma import Chroma
 import openai
 import os
 from dotenv import load_dotenv
-from utils.load_documents import load_documents
+from utils.load_documents import load_documents, load_news
+from utils.constants import BLOGS_COLLECTION, NEWS_COLLECTION
 
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Constants
 CHROMA_PATH = "chroma"
-DATA_PATH = "Filtered"
+DATA_PATH = "Data/Blogs"
 
 
 def main():
@@ -24,7 +25,7 @@ def main():
                         help="Reset the database.")
     parser.add_argument("--query", type=str,
                         help="Query to search for relevant documents.")
-    
+
     for file in os.listdir(DATA_PATH):
         documents = load_documents(file)
         add_to_chroma(documents)
@@ -36,7 +37,8 @@ def add_to_chroma(documents: list[Document]):
     """
     # Load or create the Chroma database
     db = Chroma(
-        persist_directory=CHROMA_PATH, embedding_function=get_embedding_function()
+        persist_directory=CHROMA_PATH, embedding_function=get_embedding_function(),
+        collection_name=BLOGS_COLLECTION
     )
 
     existing_items = db.get(include=[])  # IDs are always included by default
@@ -51,5 +53,21 @@ def add_to_chroma(documents: list[Document]):
     db.add_documents(new_documents)
 
 
+def add_news_to_chroma():
+    news = load_news()
+    vector_db = Chroma(
+        persist_directory=CHROMA_PATH, embedding_function=get_embedding_function(),
+        collection_name=NEWS_COLLECTION
+    )
+
+    # add in batches of 100
+    for i in range(0, len(news), 1000):
+        vector_db.add_documents(news[i:i+1000])
+        print(f"Added {i+1000} documents to the database.")
+
+    print(f"Added {len(news)} documents to the database.")
+
+
 if __name__ == "__main__":
+    # add_news_to_chroma()
     main()

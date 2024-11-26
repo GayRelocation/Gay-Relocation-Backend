@@ -1,24 +1,32 @@
-import sqlite3
+import requests
+from bs4 import BeautifulSoup
 
-db_url = "data.db"
-
-
-def fetch_blogs(document_ids: list[str]) -> dict:
+def fetch_blogs(blog_ids: list[str]) -> dict:
     """
     Fetch blogs from the database using the provided document IDs.
     """
-    db = sqlite3.connect(db_url)
-    cursor = db.cursor()
-    cursor.execute("SELECT * FROM blogs WHERE id IN ({seq})".format(
-        seq=','.join(['?'] * len(document_ids))), document_ids)
-    blogs = cursor.fetchall()
-    cursor.close()
-    return [
-        {
-            "id": blog[0],
-            "title": blog[1],
-            "description": blog[2],
-            "date": blog[3],
-            "slug": blog[4]
-        } for blog in blogs
-    ]
+    blogs = []
+
+    for blog_id in blog_ids:
+        blog = requests.get(
+            "https://www.gayrealestate.com/blog/wp-json/wp/v2/posts/" + str(blog_id))
+        if blog.status_code == 200:
+            blogs.append(blog.json())
+
+    return blogs
+
+
+def filter_blog(blog: dict) -> dict:
+    """
+    Filter the blog content to include only the necessary fields.
+    """
+    return {
+        "title": blog["title"]["rendered"],
+        "description": BeautifulSoup(blog["content"]["rendered"], "html.parser").text,
+    }
+    
+def filter_blogs(blogs: list[dict]) -> list[dict]:
+    """
+    Filter the blog content to include only the necessary fields.
+    """
+    return [filter_blog(blog) for blog in blogs]
