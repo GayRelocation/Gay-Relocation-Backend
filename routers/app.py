@@ -95,88 +95,109 @@ async def get_items_list(
     }
 
 
-def compare_cities(city1, city2):
-    def extract_numeric(value):
-        """Helper function to extract numeric values from strings with units or symbols."""
-        return float(value.replace("$", "").replace("K", "000").replace("M", "000000").replace("B", "000000000").replace(",", "").replace(" ", "").strip())
+def parse_price(price_str):
+    """Parse price strings like '$100K' into numerical values."""
+    price_str = price_str.replace('$', '').replace(
+        ',', '').replace('K', '000').replace('M', '000000').replace('B', '000000000').replace('T', '000000000000').replace(' ', '')
+    return float(price_str)
 
-    def calculate_normalized_percentage(city1_value, city2_value, is_higher_better=True):
-        """Calculates normalized percentage difference between two values."""
-        try:
-            city1_value = extract_numeric(city1_value)
-            city2_value = extract_numeric(city2_value)
-            # Avoid division by zero or over-penalizing differences
-            diff = abs(city2_value - city1_value)
-            total = city1_value + city2_value
-            percentage = (diff / total * 100) if total != 0 else 0
-            return percentage if is_higher_better else -percentage
-        except ValueError:
-            return 0  # Handle missing or non-numeric data gracefully
 
-    # Calculate normalized metrics with positive framing
-    housing_affordability = (
-        100 - calculate_normalized_percentage(
-            city1["home_price"], city2["home_price"], is_higher_better=False)
-        + calculate_normalized_percentage(
-            city1["property_tax"], city2["property_tax"], is_higher_better=False)
-        + calculate_normalized_percentage(
-            city1["home_appreciation_rate"], city2["home_appreciation_rate"])
-    ) / 3
+def parse_percentage(percent_str):
+    """Parse percentage strings like '10%' into numerical values."""
+    return float(percent_str.replace('%', ''))
 
-    quality_of_life = (
-        calculate_normalized_percentage(city1["education"], city2["education"])
-        + calculate_normalized_percentage(
-            city1["healthcare_fitness"], city2["healthcare_fitness"])
-        + calculate_normalized_percentage(city1["weather_grade"], city2["weather_grade"])
-        + 100 - calculate_normalized_percentage(
-            city1["air_quality_index"], city2["air_quality_index"], is_higher_better=False)
-        + calculate_normalized_percentage(
-            city1["culture_entertainment"], city2["culture_entertainment"])
-    ) / 5
 
-    job_market_strength = (
-        100 - calculate_normalized_percentage(
-            city1["unemployment_rate"], city2["unemployment_rate"], is_higher_better=False)
-        + calculate_normalized_percentage(city1["recent_job_growth"], city2["recent_job_growth"])
-        + calculate_normalized_percentage(
-            city1["future_job_growth_index"], city2["future_job_growth_index"])
-    ) / 3
+def calculate_housing_affordability(home_price, median_income):
+    """Calculate housing affordability score."""
+    home_price_value = parse_price(home_price)
+    median_income_value = parse_price(median_income)
+    ratio = home_price_value / median_income_value
+    ratio = max(2, min(10, ratio))
+    score = ((10 - ratio) / 8) * 70 + 30
+    return min(score, 99.9)
 
-    living_affordability = (
-        100 - calculate_normalized_percentage(
-            city1["state_income_tax"], city2["state_income_tax"], is_higher_better=False)
-        + 100 - calculate_normalized_percentage(
-            city1["sales_tax"], city2["sales_tax"], is_higher_better=False)
-        + 100 - calculate_normalized_percentage(
-            city1["utilities"], city2["utilities"], is_higher_better=False)
-        + 100 - calculate_normalized_percentage(
-            city1["transportation_cost"], city2["transportation_cost"], is_higher_better=False)
-    ) / 4
 
-    # Calculate overall score
-    overall_city_score = (
-        housing_affordability + quality_of_life +
-        job_market_strength + living_affordability
-    ) / 4
+def calculate_quality_of_life(city_data):
+    """Calculate quality of life score."""
+    factors = [
+        float(city_data["education"]),
+        float(city_data["healthcare_fitness"]),
+        float(city_data["weather_grade"]),
+        float(city_data["air_quality_index"]),
+        float(city_data["commute_transit_score"]),
+        float(city_data["accessibility"]),
+        float(city_data["culture_entertainment"]),
+    ]
+    average_score = sum(factors) / len(factors)
+    score = (average_score / 100) * 70 + 30
+    return min(score, 99.9)
 
-    # Highlight strengths instead of direct scoring
-    strengths = {
-        "housing_affordability": "City 1" if housing_affordability > 50 else "City 2",
-        "quality_of_life": "City 1" if quality_of_life > 50 else "City 2",
-        "job_market_strength": "City 1" if job_market_strength > 50 else "City 2",
-        "living_affordability": "City 1" if living_affordability > 50 else "City 2",
-    }
 
-    # Construct the response JSON
+def calculate_job_market_strength(city_data):
+    """Calculate job market strength score."""
+    unemployment_rate = parse_percentage(city_data["unemployment_rate"])
+    recent_job_growth = parse_percentage(city_data["recent_job_growth"])
+    future_job_growth_index = float(city_data["future_job_growth_index"])
+
+    unemployment_score = ((10 - unemployment_rate) / 10) * 100
+    recent_job_growth_score = ((recent_job_growth + 5) / 10) * 100
+    future_job_growth_score = future_job_growth_index
+
+    weighted_score = (
+        unemployment_score * 0.4 +
+        recent_job_growth_score * 0.2 +
+        future_job_growth_score * 0.4
+    )
+    score = (weighted_score / 100) * 70 + 30
+    return min(score, 99.9)
+
+
+def calculate_living_affordability(city_data):
+    """Calculate living affordability score."""
+    cost_factors = [
+        float(city_data["utilities"]),
+        float(city_data["food_groceries"]),
+        float(city_data["transportation_cost"]),
+    ]
+    tax_factors = [
+        parse_percentage(city_data["sales_tax"]),
+        parse_percentage(city_data["state_income_tax"]),
+        parse_percentage(city_data["property_tax"]),
+    ]
+    cost_index = sum(cost_factors) / len(cost_factors)
+    normalized_cost_index = (1 - (cost_index / 150)) * 100
+
+    average_tax_rate = sum(tax_factors) / len(tax_factors)
+    normalized_tax_score = (1 - (average_tax_rate / 15)) * 100
+
+    weighted_score = (
+        normalized_cost_index * 0.7 +
+        normalized_tax_score * 0.3
+    )
+    score = (weighted_score / 100) * 70 + 30
+    return min(score, 99.9)
+
+
+def get_city_score(city_data):
+    """Calculate overall city score."""
+
+    housing_affordability = calculate_housing_affordability(
+        city_data["home_price"], city_data["median_household_income"]
+    )
+    quality_of_life = calculate_quality_of_life(city_data)
+    job_market_strength = calculate_job_market_strength(city_data)
+    living_affordability = calculate_living_affordability(city_data)
+
+    overall_city_score = (housing_affordability + quality_of_life +
+                          job_market_strength + living_affordability) / 4
+
     response = {
         "housing_affordability": round(housing_affordability, 2),
         "quality_of_life": round(quality_of_life, 2),
         "job_market_strength": round(job_market_strength, 2),
         "living_affordability": round(living_affordability, 2),
         "overall_city_score": round(overall_city_score, 2),
-        "strengths": strengths,
     }
-
     return response
 
 
@@ -192,8 +213,8 @@ async def handle_query(request: QueryRequest, db: AsyncSession = Depends(get_db)
         )
 
     # Fetch result from RAG function
-    # result = {}
-    result = query_rag(request.from_city.city, request.to_city.city)
+    result = {}
+    # result = query_rag(request.from_city.city, request.to_city.city)
     result["heading"] = {
         "title": "BIG MOVE!",
         "description": f"A move from {request.from_city.city} to {request.to_city.city} covers a significant distance. This move would bring substantial changes in cost of living, climate, and urban environment.",
@@ -216,7 +237,7 @@ async def handle_query(request: QueryRequest, db: AsyncSession = Depends(get_db)
         **result,
         "city_1": city_1_data.__dict__,
         "city_2": city_2_data.__dict__,
-        "comparison": compare_cities(city_1_data.__dict__, city_2_data.__dict__),
+        "comparison": get_city_score(city_2_data.__dict__),
     }
 
 
@@ -231,7 +252,7 @@ async def get_similar_posts(
     """
     if not city:
         raise HTTPException(status_code=400, detail="Search term is required.")
-    
+
     # replace space with + for the search query
     city = city.replace(" ", "+")
 
