@@ -6,12 +6,12 @@ import requests
 def fetch_news(query):
 
     URL = f"{MAIN_URL}/{query}".replace("\\", "/")
-    gay_realtors_page = requests.get(URL)
+    realtors_page = requests.get(URL)
 
-    if gay_realtors_page.status_code == 200:
-        soup = BeautifulSoup(gay_realtors_page.content, 'html.parser')
+    if realtors_page.status_code == 200:
+        soup = BeautifulSoup(realtors_page.content, 'html.parser')
         news_soup = soup.find_all(class_="news_block")
-        gay_realtors_soup = soup.find_all(class_="agent_list_wrap")
+        realtors_soup = soup.find_all(class_="agent_list_wrap")
 
         news = []
 
@@ -26,8 +26,8 @@ def fetch_news(query):
                 "description": description
             })
 
-        gay_realtors = []
-        for realtor in gay_realtors_soup:
+        realtors = []
+        for realtor in realtors_soup:
             name = realtor.find("h3").find("a").text
             name_url = realtor.find("h3").find("a")["href"]
             agent_type = realtor.find("span", class_="agent_type").text
@@ -43,7 +43,7 @@ def fetch_news(query):
             description = " ".join([p.text for p in realtor.find(
                 "div", class_="agent_info").find_all("p")]).replace("...read more", "")
 
-            gay_realtors.append({
+            realtors.append({
                 "name": name,
                 "description": description,
                 "name_url": name_url,
@@ -55,10 +55,11 @@ def fetch_news(query):
             })
 
         return {
+            "url" : URL,
             "news": news,
-            "gay_realtors": gay_realtors
+            "realtors": realtors[:2],
         }
     else:
         print(
-            f"Failed to fetch the page. Status code: {gay_realtors_page.status_code}")
+            f"Failed to fetch the page. Status code: {realtors_page.status_code}")
         return []
