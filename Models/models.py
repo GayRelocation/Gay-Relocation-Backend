@@ -1,13 +1,14 @@
 from sqlalchemy import Column, Integer, String, Index, DateTime
 from . import Base
 from datetime import datetime
+from uuid import uuid4
 
 
 
 class CityMetrics(Base):
     __tablename__ = "city_metrics"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(String, primary_key=True, default=lambda: str(uuid4()))
     zip_code = Column(String, index=True)
     city = Column(String, index=True)
     state_code = Column(String)

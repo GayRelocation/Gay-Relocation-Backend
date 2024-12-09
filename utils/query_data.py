@@ -1,4 +1,3 @@
-
 from langchain_chroma import Chroma
 from langchain.prompts import ChatPromptTemplate
 from openai import OpenAI

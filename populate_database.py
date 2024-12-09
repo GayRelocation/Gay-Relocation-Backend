@@ -1,11 +1,9 @@
 import argparse
 import os
-import shutil
+import openai
 from langchain.schema.document import Document
 from utils.get_embedding_function import get_embedding_function
 from langchain_chroma import Chroma
-import openai
-import os
 from dotenv import load_dotenv
 from utils.load_documents import load_documents, load_news
 from utils.constants import BLOGS_COLLECTION, NEWS_COLLECTION

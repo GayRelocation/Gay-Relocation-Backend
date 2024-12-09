@@ -4,7 +4,7 @@ from Models import Base
 from Models.models import *
 import os
 
-SUPABASE_URL = os.getenv("SUPABASE_DB_URL", "postgresql://user:password@host:port/dbname")
+SUPABASE_URL = os.getenv("SUPABASE_DB_URL")
 
 # Create the database engine
 engine = create_engine(
