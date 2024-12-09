@@ -1,22 +1,20 @@
+import openai
+import os
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.future import select
 from sqlalchemy import or_
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional, List
-from db import get_db
 from Models.models import CityMetrics
 from utils.query_data import query_rag
-import openai
-import os
 from utils.city_score import get_city_score
-from utils.constants import CHROMA_PATH, NEWS_COLLECTION, MAIN_URL
-from langchain_chroma import Chroma
-from get_embedding_function import get_embedding_function
 from utils.fetch_news import fetch_news
-from get_news_db import get_news_db, News
-
-openai.api_key = os.getenv("OPENAI_API_KEY")
+from utils.City_Data.get_city_data import get_city_data
+from Database.get_news_db import get_news_db, News
+from Database.get_verified_db import get_verified_db
+from Database.get_city_list_db import get_city_list_db
 
 
 # Create the router
@@ -52,7 +50,7 @@ async def get_items_list(
     q: Optional[str] = Query(
         None, description="City name, state name, or zip code to search"
     ),
-    db: AsyncSession = Depends(get_db),
+    db: Session = Depends(get_city_list_db),
 ):
     """
     Search for cities based on city name, state name, or zip code
@@ -65,16 +63,15 @@ async def get_items_list(
     is_digit = q.isdigit()  # Check if the search term is numeric (zip code)
 
     # Perform query using SQLAlchemy
-    query = select(CityMetrics).filter(
+    query = db.query(CityMetrics).filter(
         or_(
             CityMetrics.city.ilike(search_query),
             CityMetrics.state_name.ilike(search_query),
-            CityMetrics.zip_code.ilike(search_query) if is_digit else False,
+            CityMetrics.zip_code.ilike(search_query),
         )
     ).limit(10)
 
-    result = db.execute(query)
-    cities = result.scalars().all()  # Correctly fetch all matching cities
+    cities = query.all()
 
     # If no results found
     if not cities:
@@ -102,10 +99,14 @@ async def get_items_list(
 
 
 @api_router.post("/comparison")
-async def handle_query(request: QueryRequest, db: AsyncSession = Depends(get_db)):
+async def handle_query(request: QueryRequest, db: Session = Depends(get_verified_db)):
     """
     Compare metrics between two cities.
     """
+    
+    def model_to_dict(instance):
+        return {c.name: getattr(instance, c.name) for c in instance.__table__.columns}
+    
     # Validate input
     if not request.from_city or not request.to_city:
         raise HTTPException(
@@ -113,31 +114,33 @@ async def handle_query(request: QueryRequest, db: AsyncSession = Depends(get_db)
         )
 
     # Fetch result from RAG function
-    # result = {}
     result = query_rag(request.from_city.city, request.to_city.city)
     result["heading"] = {
         "title": "BIG MOVE!",
         "description": f"A move from {request.from_city.city} to {request.to_city.city} covers a significant distance. This move would bring substantial changes in cost of living, climate, and urban environment.",
     }
 
-    # Fetch city data from the database
-    city_1_data = db.execute(select(CityMetrics).filter(
-        CityMetrics.zip_code == request.from_city.zip_code)).scalar_one_or_none()
-
-    city_2_data = db.execute(select(CityMetrics).filter(
-        CityMetrics.zip_code == request.to_city.zip_code)).scalar_one_or_none()
-
+    city_1_data = get_city_data(request.from_city, db)
+    city_2_data = get_city_data(request.to_city, db)
+    db.commit()
+    db.refresh(city_1_data)
+    db.refresh(city_2_data)
+    
+    city_1_data = model_to_dict(city_1_data)
+    city_2_data = model_to_dict(city_2_data)
     # Check if city data exists
     if not city_1_data or not city_2_data:
         raise HTTPException(
             status_code=404, detail="City data not found for one or both cities."
         )
 
+
     return {
         **result,
-        "city_1": city_1_data.__dict__,
-        "city_2": city_2_data.__dict__,
-        "comparison": get_city_score(city_2_data.__dict__),
+        "city_1": city_1_data,
+        "city_2": city_2_data,
+        "comparison": get_city_score(city_2_data),
+        "success": True,
     }
 
 

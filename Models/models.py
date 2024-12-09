@@ -1,5 +1,7 @@
-from sqlalchemy import Column, Integer, String, Index
-from db import Base
+from sqlalchemy import Column, Integer, String, Index, DateTime
+from . import Base
+from datetime import datetime
+
 
 
 class CityMetrics(Base):
@@ -30,6 +32,10 @@ class CityMetrics(Base):
     food_groceries = Column(String)
     sales_tax = Column(String)
     transportation_cost = Column(String)
+    
+    # dates
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     # Define composite index for optimized search
     __table_args__ = (

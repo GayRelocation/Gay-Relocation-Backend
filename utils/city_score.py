@@ -1,13 +1,22 @@
+import re
 
 max_percentage = 95
 min_percentage = 5
 
 
 def parse_price(price_str):
-    """Parse price strings like '$100K' into numerical values."""
-    price_str = price_str.replace('$', '').replace(
-        ',', '').replace('K', '000').replace('M', '000000').replace('B', '000000000').replace('T', '000000000000').replace(' ', '')
-    return float(price_str)
+    """Parse price strings like '$1.5M' into numerical values."""
+    multipliers = {'K': 1e3, 'M': 1e6, 'B': 1e9, 'T': 1e12, 'k': 1e3, 'm': 1e6, 'b': 1e9, 't': 1e12}
+    # Remove unnecessary characters like commas, spaces, and dollar signs
+    price_str = price_str.replace('$', '').replace(',', '').replace(' ', '')
+    # Match numeric value and optional suffix
+    match = re.match(r'^(\d+(\.\d+)?)([KMBT]?)$', price_str, re.IGNORECASE)
+    if not match:
+        raise ValueError(f"Invalid price format: {price_str}")
+    number, _, suffix = match.groups()
+    multiplier = multipliers.get(suffix.upper(), 1)  # Default to 1 if no suffix
+    return float(number) * multiplier
+
 
 
 def parse_percentage(percent_str):

@@ -2,7 +2,7 @@ import argparse
 import os
 import shutil
 from langchain.schema.document import Document
-from get_embedding_function import get_embedding_function
+from utils.get_embedding_function import get_embedding_function
 from langchain_chroma import Chroma
 import openai
 import os

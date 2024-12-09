@@ -2,7 +2,7 @@
 from langchain_chroma import Chroma
 from langchain.prompts import ChatPromptTemplate
 from openai import OpenAI
-from get_embedding_function import get_embedding_function
+from utils.get_embedding_function import get_embedding_function
 from utils.get_blogs import fetch_blogs, filter_blogs
 from pydantic import BaseModel
 from typing import List
