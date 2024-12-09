@@ -90,7 +90,7 @@ async def get_items_list(
                 "city": city.city,
                 "state_name": city.state_name,
                 "state_code": city.state_code,
-                "value": f"{city.city}, {city.state_code}{f' ({city.zip_code})' if is_digit else ''}",
+                "value": f"{city.city}, {city.state_code} ({city.zip_code})",
             }
             for city in cities
         ],
@@ -103,10 +103,10 @@ async def handle_query(request: QueryRequest, db: Session = Depends(get_verified
     """
     Compare metrics between two cities.
     """
-    
+
     def model_to_dict(instance):
         return {c.name: getattr(instance, c.name) for c in instance.__table__.columns}
-    
+
     # Validate input
     if not request.from_city or not request.to_city:
         raise HTTPException(
@@ -125,7 +125,7 @@ async def handle_query(request: QueryRequest, db: Session = Depends(get_verified
     db.commit()
     db.refresh(city_1_data)
     db.refresh(city_2_data)
-    
+
     city_1_data = model_to_dict(city_1_data)
     city_2_data = model_to_dict(city_2_data)
     # Check if city data exists
@@ -133,7 +133,6 @@ async def handle_query(request: QueryRequest, db: Session = Depends(get_verified
         raise HTTPException(
             status_code=404, detail="City data not found for one or both cities."
         )
-
 
     return {
         **result,
