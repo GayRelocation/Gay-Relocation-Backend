@@ -14,17 +14,60 @@ from utils.fetch_news import fetch_news
 from utils.City_Data.get_city_data import get_city_data
 from Database.get_news_db import get_news_db, News
 from Database.get_verified_db import get_verified_db
-from Database.get_city_list_db import get_city_list_db
+from Database.get_city_list_db import get_city_list_db, CityMetricsQuery
 
 
 # Create the router
 api_router = APIRouter()
 
 
+@api_router.get("/get-cities-list")
+async def get_items_list(
+    q: Optional[str] = Query(
+        None, description="City name and state name to search"
+    ),
+    db: Session = Depends(get_city_list_db),
+):
+    if not q or not q.strip():
+        raise HTTPException(status_code=400, detail="Search term is required.")
+
+    search_query = f"%{q.strip()}%"
+
+    query = db.query(CityMetricsQuery).filter(
+        or_(
+            CityMetricsQuery.city.ilike(search_query),
+            CityMetricsQuery.state_name.ilike(search_query),
+            CityMetricsQuery.state_code.ilike(search_query)
+        )
+    ).limit(10)
+
+    cities = query.all()
+
+    if not cities:
+        return {
+            "results": [],
+            "success": False,
+            "message": "No matching cities found.",
+        }
+
+    return {
+        "results": [
+            {
+                "id": city.id,
+                "city": city.city,
+                "state_name": city.state_name,
+                "state_code": city.state_code,
+                "value": f"{city.city}, {city.state_code}",
+            }
+            for city in cities
+        ],
+        "success": True,
+    }
+
+
 # Pydantic models for request validation
 class CityRequest(BaseModel):
     id: int
-    zip_code: Optional[str] = None
     city: Optional[str] = None
     state_code: Optional[str] = None
     state_name: Optional[str] = None
@@ -33,69 +76,6 @@ class CityRequest(BaseModel):
 class QueryRequest(BaseModel):
     from_city: Optional[CityRequest] = None
     to_city: Optional[CityRequest] = None
-
-
-class Message(BaseModel):
-    role: str
-    content: str
-
-
-class ChatRequest(BaseModel):
-    messages: List[Message]
-    city: Optional[str] = None
-
-
-@api_router.get("/get-cities-list")
-async def get_items_list(
-    q: Optional[str] = Query(
-        None, description="City name, state name, or zip code to search"
-    ),
-    db: Session = Depends(get_city_list_db),
-):
-    """
-    Search for cities based on city name, state name, or zip code
-    and return the top 10 matching results.
-    """
-    if not q or not q.strip():
-        raise HTTPException(status_code=400, detail="Search term is required.")
-
-    search_query = f"%{q.strip()}%"
-    is_digit = q.isdigit()  # Check if the search term is numeric (zip code)
-
-    # Perform query using SQLAlchemy
-    query = db.query(CityMetrics).filter(
-        or_(
-            CityMetrics.city.ilike(search_query),
-            CityMetrics.state_name.ilike(search_query),
-            CityMetrics.zip_code.ilike(search_query),
-        )
-    ).limit(10)
-
-    cities = query.all()
-
-    # If no results found
-    if not cities:
-        return {
-            "results": [],
-            "success": False,
-            "message": "No matching cities found.",
-        }
-
-    # Prepare response
-    return {
-        "results": [
-            {
-                "id": city.id,
-                "zip_code": city.zip_code,
-                "city": city.city,
-                "state_name": city.state_name,
-                "state_code": city.state_code,
-                "value": f"{city.city}, {city.state_code} ({city.zip_code})",
-            }
-            for city in cities
-        ],
-        "success": True,
-    }
 
 
 @api_router.post("/comparison")
@@ -150,10 +130,6 @@ async def get_similar_posts(
     ),
     db: AsyncSession = Depends(get_news_db),
 ):
-    """
-    Get similar posts based on the search term.
-    """
-
     results = db.execute(select(News).filter(
         News.name.ilike(f"%{city}%"))).scalars().all()[0]
 
@@ -171,6 +147,16 @@ async def get_similar_posts(
         "results": results,
         "success": True,
     }
+
+
+class Message(BaseModel):
+    role: str
+    content: str
+
+
+class ChatRequest(BaseModel):
+    messages: List[Message]
+    city: Optional[str] = None
 
 
 def chat_with_gpt(messages: List[Message], city: str):

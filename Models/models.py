@@ -1,18 +1,18 @@
-from sqlalchemy import Column, Integer, String, Index, DateTime
+from sqlalchemy import Column, String, Index, DateTime, Integer
 from . import Base
 from datetime import datetime
-from uuid import uuid4
-
 
 
 class CityMetrics(Base):
     __tablename__ = "city_metrics"
 
-    id = Column(String, primary_key=True, default=lambda: str(uuid4()))
-    zip_code = Column(String, index=True)
+    id = Column(Integer, primary_key=True, index=True)
+    search_id = Column(Integer, index=True)
+    
     city = Column(String, index=True)
     state_code = Column(String)
     state_name = Column(String, index=True)
+    
     home_price = Column(String)
     property_tax = Column(String)
     home_appreciation_rate = Column(String)
@@ -33,12 +33,12 @@ class CityMetrics(Base):
     food_groceries = Column(String)
     sales_tax = Column(String)
     transportation_cost = Column(String)
-    
+
     # dates
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     # Define composite index for optimized search
     __table_args__ = (
-        Index("idx_city_state_zip", "city", "state_name", "zip_code"),
+        Index("idx_city_state", "city", "state_name"),
     )

@@ -13,7 +13,6 @@ You are a real estate agent which gathers data for cities in the United States. 
 1. City Name
 2. State Name
 3. State Code
-4. Zip Code
 Your task is to provide below city metrics data for the city. 
 
 home_price = String, in dollars (e.g. $500K)
@@ -39,7 +38,6 @@ transportation_cost = String, out of 100 (e.g. 80)
 
 Output:
 1. Strictly return only JSON formatted data.
-2. If you did not find the data, please use city data instead of specific zip code data.
 2. The output should contain all the above metrics.
 3. The output should be in the same order as mentioned above.
 4. Do not include any additional information in the output, like messages or notes.
@@ -63,7 +61,7 @@ perplexity_client = OpenAI(api_key=os.getenv(
 
 
 def get_city_data_from_perplexity(city_details: CityDetails, db: Session):
-    user_prompt = f"Get city data for City Name: {city_details.city}, State Name: {city_details.state_name}, State Code:{city_details.state_code} and Zip Code: {city_details.zip_code}"
+    user_prompt = f"Get city data for City Name: {city_details.city}, State Name: {city_details.state_name} and State Code:{city_details.state_code}"
 
     response = perplexity_client.chat.completions.create(
         model=PERPLEXITY_MODEL,
@@ -103,33 +101,32 @@ def get_city_data(city_details: CityDetails, db: Session):
     """
     Get city data from the database based on the zip code.
     """
-    # get city data from the database wtih the zip code
-    city_data = db.query(CityMetrics).filter_by(
-        zip_code=city_details.zip_code).first()
 
-    # if updated date is older than 1 year, update the data
+    city_data = db.query(CityMetrics).filter_by(
+        search_id=city_details.id).first()
+
     if city_data and (datetime.now() - city_data.updated_at).days > 365:
         updated_data = get_city_data_from_perplexity(city_details, db)
         db.query(CityMetrics).filter_by(
-            zip_code=city_details.zip_code).update(updated_data)
+            search_id=city_details.id).update(updated_data)
         db.commit()
         city_data = db.query(CityMetrics).filter_by(
-            zip_code=city_details.zip_code).first()
-        db.refresh(city_data)  # Refresh the ORM object
+            search_id=city_details.id).first()
+        db.refresh(city_data)
 
     if city_data is None:
         new_city_data = get_city_data_from_perplexity(city_details, db)
         city_data = CityMetrics(
-            zip_code=city_details.zip_code,
+            search_id=city_details.id,
             city=city_details.city,
             state_name=city_details.state_name,
             state_code=city_details.state_code,
             **new_city_data
         )
-        db.add(city_data)  # Add the object to the session
-        db.commit()        # Commit the transaction
+        db.add(city_data)
+        db.commit()
         city_data = db.query(CityMetrics).filter_by(
-            zip_code=city_details.zip_code).first()
-        db.refresh(city_data)  # Refresh the ORM object
+            search_id=city_details.id).first()
+        db.refresh(city_data)
 
     return city_data
