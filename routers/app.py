@@ -2,7 +2,7 @@ import openai
 import os
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.future import select
-from sqlalchemy import or_
+from sqlalchemy import or_, case
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -33,13 +33,19 @@ async def get_items_list(
 
     search_query = f"%{q.strip()}%"
 
+
     query = db.query(CityMetricsQuery).filter(
         or_(
             CityMetricsQuery.city.ilike(search_query),
             CityMetricsQuery.state_name.ilike(search_query),
             CityMetricsQuery.state_code.ilike(search_query)
         )
-    ).limit(10)
+    ).order_by(
+        case(
+            (CityMetricsQuery.city.ilike(search_query), 1),
+            else_=2
+        )
+    ).limit(20)
 
     cities = query.all()
 
