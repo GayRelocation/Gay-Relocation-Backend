@@ -59,7 +59,7 @@ def fetch_news(query):
             return {
                 "url": URL,
                 "news": news,
-                "realtors": realtors[:2],
+                "realtors": realtors,
             }
         else:
             print(

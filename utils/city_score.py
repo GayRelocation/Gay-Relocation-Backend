@@ -1,7 +1,7 @@
 import re
 
-max_percentage = 95
-min_percentage = 5
+max_percentage = 99.99
+min_percentage = 55
 
 
 def parse_price(price_str):
