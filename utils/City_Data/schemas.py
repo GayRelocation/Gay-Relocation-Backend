@@ -8,6 +8,7 @@ class CityDetails(BaseModel):
     state_code: str
 
 
+
 class CityMetricsSchema(BaseModel):
     home_price: str
     property_tax: str

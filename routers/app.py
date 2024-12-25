@@ -23,6 +23,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from utils.City_Data.get_city_data import get_city_data_from_perplexity_for_state
 
 # Create the router
 api_router = APIRouter()
@@ -107,6 +108,7 @@ async def handle_query(request: QueryRequest, db: Session = Depends(get_verified
         )
 
     # Fetch result from RAG function
+    # result = {}
     result = query_rag(request.from_city.city, request.to_city.city)
     result["heading"] = {
         "title": "BIG MOVE!",
@@ -131,7 +133,7 @@ async def handle_query(request: QueryRequest, db: Session = Depends(get_verified
         **result,
         "city_1": city_1_data,
         "city_2": city_2_data,
-        "comparison": get_city_score(city_2_data),
+        "comparison": get_city_score(city_1_data, city_2_data),
         "success": True,
     }
 
@@ -260,3 +262,9 @@ def contact_us(request: ContactUsRequest):
             status_code=500, detail=f"An error occurred: {str(e)}")
     finally:
         driver.quit()
+
+
+@api_router.post("/fill_state_data")
+def fill_state_data(state_details: CityRequest):
+    data = get_city_data_from_perplexity_for_state(state_details)
+    return data
