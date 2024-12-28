@@ -67,7 +67,8 @@ Follow these guidelines:
 2. If values are given in ranges, calculate and provide the average value (e.g., 5-10% -> 7.5%).
 3. If any data is unavailable, return a null value for that metric.
 4. Ensure the output strictly follows the CityMetricsSchema format.
-5. If values are null please use state level data as default but dont leave any field empty. 
+5. If values are missing, use your own knowledge to fill in the gaps.
+6. If values are missing and you are unsure, return null. 
 """
 
 
@@ -123,7 +124,8 @@ def get_city_data_from_perplexity_for_state(city_details: CityDetails):
                 "role": "user",
                 "content": system_prompt_for_state + default_prompt + user_prompt
             },
-        ]
+        ],
+        
     )
 
     city_data = response.choices[0].message.content

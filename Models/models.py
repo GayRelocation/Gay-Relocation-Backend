@@ -13,10 +13,13 @@ class CityMetrics(Base):
     state_code = Column(String)
     state_name = Column(String, index=True)
     
+    # Housing Availability
     home_price = Column(String)
     property_tax = Column(String)
     home_appreciation_rate = Column(String)
     price_per_square_foot = Column(String)
+    
+    # Quality of Life
     education = Column(String)
     healthcare_fitness = Column(String)
     weather_grade = Column(String)
@@ -24,10 +27,14 @@ class CityMetrics(Base):
     commute_transit_score = Column(String)
     accessibility = Column(String)
     culture_entertainment = Column(String)
+    
+    # Job Market Strength
     unemployment_rate = Column(String)
     recent_job_growth = Column(String)
     future_job_growth_index = Column(String)
     median_household_income = Column(String)
+    
+    # Living Affordability
     state_income_tax = Column(String)
     utilities = Column(String)
     food_groceries = Column(String)

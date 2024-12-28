@@ -23,6 +23,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.service import Service
 from utils.City_Data.get_city_data import get_city_data_from_perplexity_for_state
 
 # Create the router
@@ -46,7 +47,7 @@ async def get_items_list(
         or_(
             CityMetricsQuery.city.ilike(search_query),
             CityMetricsQuery.state_name.ilike(search_query),
-            CityMetricsQuery.state_code.ilike(search_query) 
+            CityMetricsQuery.state_code.ilike(search_query)
         )
     ).order_by(
         case(
@@ -208,7 +209,6 @@ class ContactUsRequest(BaseModel):
     comments: str
 
 
-
 @api_router.post("/contact-us")
 def contact_us(request: ContactUsRequest):
     # Replace MAIN_URL with the actual base URL
@@ -219,8 +219,12 @@ def contact_us(request: ContactUsRequest):
         options = Options()
         options.add_argument("--headless")
         options.add_argument("--disable-gpu")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
         # Ensure the WebDriver is correctly installed and in PATH
-        driver = webdriver.Chrome(options=options)
+        
+        CHROMEDRIVER_PATH = "/usr/bin/chromedriver"
+        driver = webdriver.Chrome(options=options, service=Service(CHROMEDRIVER_PATH))
 
         # Navigate to the page
         driver.get(URL)
@@ -263,8 +267,3 @@ def contact_us(request: ContactUsRequest):
     finally:
         driver.quit()
 
-
-@api_router.post("/fill_state_data")
-def fill_state_data(state_details: CityRequest):
-    data = get_city_data_from_perplexity_for_state(state_details)
-    return data
