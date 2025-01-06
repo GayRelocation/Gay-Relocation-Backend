@@ -1,6 +1,4 @@
 import openai
-import requests
-from bs4 import BeautifulSoup
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.future import select
 from sqlalchemy import or_, case
@@ -8,7 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional, List
-from Models.models import CityMetrics
 from utils.query_data import query_rag
 from utils.city_score import get_city_score
 from utils.fetch_news import fetch_news
@@ -20,11 +17,10 @@ from utils.constants import MAIN_URL
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
-from utils.City_Data.get_city_data import get_city_data_from_perplexity_for_state
+from webdriver_manager.chrome import ChromeDriverManager
 
 # Create the router
 api_router = APIRouter()
@@ -42,7 +38,6 @@ async def get_items_list(
         raise HTTPException(status_code=400, detail="Search term is required.")
 
     search_query = f"%{q.strip()}%"
-
     query = db.query(CityMetricsQuery).filter(
         or_(
             CityMetricsQuery.city.ilike(search_query),
@@ -102,6 +97,35 @@ async def handle_query(request: QueryRequest, db: Session = Depends(get_verified
     def model_to_dict(instance):
         return {c.name: getattr(instance, c.name) for c in instance.__table__.columns}
 
+    def add_units(city_data):
+        city = {
+            "accessibility": str(int(city_data["accessibility"])),
+            "air_quality_index": str(int(city_data["air_quality_index"])),
+            "city": city_data["city"],
+            "commute_transit_score": str(int(city_data["commute_transit_score"])),
+            "culture_entertainment": str(int(city_data["culture_entertainment"])),
+            "education": str(int(city_data["education"])),
+            "food_groceries": str(int(city_data["food_groceries"])),
+            "future_job_growth_index": f'{city_data["future_job_growth_index"]}%',
+            "healthcare_fitness": str(int(city_data["healthcare_fitness"])),
+            "home_appreciation_rate": f"{city_data['home_appreciation_rate']}%",
+            "home_price": f"${city_data['home_price']:,}",
+            "median_household_income": f"${city_data['median_household_income']:,}",
+            "price_per_square_foot": f"${city_data['price_per_square_foot']:,}",
+            "property_tax": f"${city_data['property_tax']:,}",
+            "recent_job_growth": f'{city_data["recent_job_growth"]}%',
+            "sales_tax": f"{city_data['sales_tax']}%",
+            "state_code": city_data["state_code"],
+            "state_income_tax": f"{city_data['state_income_tax']}%",
+            "state_name": city_data["state_name"],
+            "transportation_cost": str(int(city_data["transportation_cost"])),
+            "unemployment_rate": f"{city_data['unemployment_rate']}%",
+            "utilities": str(int(city_data["utilities"])),
+            "weather_grade": str(city_data["weather_grade"]),
+        }
+
+        return city
+
     # Validate input
     if not request.from_city or not request.to_city:
         raise HTTPException(
@@ -118,12 +142,16 @@ async def handle_query(request: QueryRequest, db: Session = Depends(get_verified
 
     city_1_data = get_city_data(request.from_city, db)
     city_2_data = get_city_data(request.to_city, db)
-    db.commit()
-    db.refresh(city_1_data)
-    db.refresh(city_2_data)
+    # db.commit()
+    # db.refresh(city_1_data)
+    # db.refresh(city_2_data)
 
     city_1_data = model_to_dict(city_1_data)
     city_2_data = model_to_dict(city_2_data)
+
+    city_1_str = add_units(city_1_data)
+    city_2_str = add_units(city_2_data)
+
     # Check if city data exists
     if not city_1_data or not city_2_data:
         raise HTTPException(
@@ -132,8 +160,8 @@ async def handle_query(request: QueryRequest, db: Session = Depends(get_verified
 
     return {
         **result,
-        "city_1": city_1_data,
-        "city_2": city_2_data,
+        "city_1": city_1_str,
+        "city_2": city_2_str,
         "comparison": get_city_score(city_1_data, city_2_data),
         "success": True,
     }
@@ -213,25 +241,26 @@ class ContactUsRequest(BaseModel):
 def contact_us(request: ContactUsRequest):
     # Replace MAIN_URL with the actual base URL
     URL = f"{MAIN_URL}/contact-gay-real-estate.html"
+    driver = None
 
     try:
-        # Set up Selenium for headless operation
+        # Configure Chrome options for headless operation
         options = Options()
         options.add_argument("--headless")
         options.add_argument("--disable-gpu")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
-        # Ensure the WebDriver is correctly installed and in PATH
-        
-        CHROMEDRIVER_PATH = "/usr/bin/chromedriver"
-        driver = webdriver.Chrome(options=options, service=Service(CHROMEDRIVER_PATH))
+
+        # Initialize the WebDriver using webdriver-manager
+        driver = webdriver.Chrome(
+            service=Service(ChromeDriverManager().install()), options=options
+        )
 
         # Navigate to the page
         driver.get(URL)
 
-        # Fill the form fields
+        # Fill in the form fields
         try:
-            # Locate and fill the input fields
             driver.find_element(By.ID, "clientName").send_keys(request.name)
             driver.find_element(By.ID, "clientEmail").send_keys(request.email)
             driver.find_element(By.ID, "clientPhone").send_keys(request.phone)
@@ -239,31 +268,90 @@ def contact_us(request: ContactUsRequest):
                 request.comments)
         except Exception as e:
             raise HTTPException(
-                status_code=500, detail=f"Error filling form: {str(e)}")
+                status_code=500, detail=f"Error filling form: {str(e)}"
+            )
 
-        # Check and click the "Send" button
+        # Handle the "Send" button
         try:
-            submit_button = driver.find_element(By.ID, "contactUsSubmit")
-            ActionChains(driver).move_to_element(
-                submit_button).click().perform()
+            # Wait for the button to be clickable
+            submit_button = WebDriverWait(driver, 20).until(
+                EC.element_to_be_clickable((By.ID, "contactUsSubmit"))
+            )
+
+            # Scroll the button into view
+            driver.execute_script(
+                "arguments[0].scrollIntoView(true);", submit_button)
+
+            # Force click the button
+            driver.execute_script("arguments[0].click();", submit_button)
+
         except Exception as e:
             raise HTTPException(
-                status_code=500, detail=f"Error clicking submit button: {str(e)}")
+                status_code=500, detail=f"Error clicking submit button: {str(e)}"
+            )
 
-        # Dynamically wait for the new page to load
+        # Wait for success message
         try:
             WebDriverWait(driver, 20).until(
                 EC.presence_of_element_located((By.ID, "successMsg"))
             )
-            success_msg = "Thank You! We have received your request and one of our staff members will reply shortly."
-            return {"success": True, "message": success_msg}
+            return {
+                "success": True,
+                "message": "Thank You! We have received your request and one of our staff members will reply shortly.",
+            }
         except Exception as e:
             raise HTTPException(
-                status_code=500, detail="Success message not found after submission.")
+                status_code=500, detail="Success message not found after submission."
+            )
 
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"An error occurred: {str(e)}")
+            status_code=500, detail=f"An error occurred: {str(e)}"
+        )
     finally:
-        driver.quit()
+        if driver:
+            driver.quit()
 
+
+# @api_router.post("/add_city_data_bulk")
+# async def add_city_data_bulk(db: Session = Depends(get_verified_db), city_list_db: Session = Depends(get_city_list_db)):
+#     try:
+#         import json
+#         with open('Merged.json') as f:
+#             data_list = json.load(f)
+
+#         for data in data_list:
+#             try:
+#                 data.pop('id', None)
+#                 data.pop('cost_of_living', None)
+#                 data.pop('health_care', None)
+
+#                 city_name = data.get('city')
+#                 state_name = data.get('state_name')
+#                 state_code = data.get('state_code')
+
+#                 if not city_name or not state_name or not state_code:
+#                     return {"success": False, "message": "Missing required fields: city, state_name, or state_code."}
+
+#                 city_list = city_list_db.query(CityMetricsQuery).filter(
+#                     CityMetricsQuery.city == city_name,
+#                     CityMetricsQuery.state_name == state_name,
+#                     CityMetricsQuery.state_code == state_code
+#                 ).first()
+
+#                 if not city_list:
+#                     return {"success": False, "message": f"City {city_name}, {state_name} not found in city list database."}
+
+#                 search_id = city_list.id
+#                 city_data = CityMetrics(**data, search_id=search_id)
+#                 db.add(city_data)
+
+#             except Exception as e:
+#                 db.rollback()
+#                 return {"success": False, "message": f"An error occurred while processing city {data.get('city')}: {str(e)}"}
+
+#         db.commit()
+#         return {"success": True, "message": "All city data added successfully."}
+
+#     except Exception as e:
+#         return {"success": False, "message": f"An error occurred: {str(e)}"}

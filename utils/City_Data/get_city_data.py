@@ -160,28 +160,28 @@ def get_city_data(city_details: CityDetails, db: Session):
     city_data = db.query(CityMetrics).filter_by(
         search_id=city_details.id).first()
 
-    if city_data and (datetime.now() - city_data.updated_at).days > 365:
-        updated_data = get_city_data_from_perplexity(city_details)
-        db.query(CityMetrics).filter_by(
-            search_id=city_details.id).update(updated_data)
-        db.commit()
-        city_data = db.query(CityMetrics).filter_by(
-            search_id=city_details.id).first()
-        db.refresh(city_data)
+    # if city_data and (datetime.now() - city_data.updated_at).days > 365:
+    #     updated_data = get_city_data_from_perplexity(city_details)
+    #     db.query(CityMetrics).filter_by(
+    #         search_id=city_details.id).update(updated_data)
+    #     db.commit()
+    #     city_data = db.query(CityMetrics).filter_by(
+    #         search_id=city_details.id).first()
+    #     db.refresh(city_data)
 
-    if city_data is None:
-        new_city_data = get_city_data_from_perplexity(city_details)
-        city_data = CityMetrics(
-            search_id=city_details.id,
-            city=city_details.city,
-            state_name=city_details.state_name,
-            state_code=city_details.state_code,
-            **new_city_data
-        )
-        db.add(city_data)
-        db.commit()
-        city_data = db.query(CityMetrics).filter_by(
-            search_id=city_details.id).first()
-        db.refresh(city_data)
+    # if city_data is None:
+    #     new_city_data = get_city_data_from_perplexity(city_details)
+    #     city_data = CityMetrics(
+    #         search_id=city_details.id,
+    #         city=city_details.city,
+    #         state_name=city_details.state_name,
+    #         state_code=city_details.state_code,
+    #         **new_city_data
+    #     )
+    #     db.add(city_data)
+    #     db.commit()
+    #     city_data = db.query(CityMetrics).filter_by(
+    #         search_id=city_details.id).first()
+    #     db.refresh(city_data)
 
     return city_data

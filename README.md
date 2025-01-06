@@ -1,9 +1,0 @@
-www.zillow.com
-www.sftaxappeal.com
-www.redfin.com
-ycharts.com
-www.census.gov
-datausa.io
-smartasset.com
-taxfoundation.org
-www.avalara.com
