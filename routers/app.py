@@ -246,6 +246,7 @@ def contact_us(request: ContactUsRequest):
     try:
         # Configure Chrome options for headless operation
         options = Options()
+        options.binary_location = "/usr/bin/google-chrome"  # Path to Chrome binary
         options.add_argument("--headless")
         options.add_argument("--disable-gpu")
         options.add_argument("--no-sandbox")
