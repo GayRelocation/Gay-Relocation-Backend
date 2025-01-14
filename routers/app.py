@@ -21,6 +21,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+from Models.models import CityMetrics
 
 # Create the router
 api_router = APIRouter()
@@ -245,20 +246,22 @@ def contact_us(request: ContactUsRequest):
 
     try:
         # Configure Chrome options for headless operation
-        options = Options()
-        options.binary_location = "/usr/bin/google-chrome"  # Path to Chrome binary
-        options.add_argument("--headless")
-        options.add_argument("--disable-gpu")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
+        # Set up the Selenium WebDriver
+        options = webdriver.ChromeOptions()
+        options.add_argument('--no-sandbox')
+        options.add_argument('--headless')
+        options.add_argument('--ignore-certificate-errors')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--disable-extensions')
+        options.add_argument('--disable-gpu')
 
-        # Initialize the WebDriver using webdriver-manager
-        driver = webdriver.Chrome(
-            service=Service(ChromeDriverManager().install()), options=options
-        )
+        driver = webdriver.Chrome(options=options)
+        driver.set_page_load_timeout(90)
 
-        # Navigate to the page
+        # Load the URL and get the page source
+        driver.implicitly_wait(6)
         driver.get(URL)
+        # ...
 
         # Fill in the form fields
         try:
@@ -314,45 +317,81 @@ def contact_us(request: ContactUsRequest):
             driver.quit()
 
 
-# @api_router.post("/add_city_data_bulk")
-# async def add_city_data_bulk(db: Session = Depends(get_verified_db), city_list_db: Session = Depends(get_city_list_db)):
+# import csv
+
+# @api_router.post("/add_city_data_bulk_csv")
+# async def add_city_data_bulk_csv(db: Session = Depends(get_verified_db), city_list_db: Session = Depends(get_city_list_db)):
 #     try:
-#         import json
-#         with open('Merged.json') as f:
-#             data_list = json.load(f)
+#         with open('merged.csv', newline='', encoding='utf-8') as csvfile:
+#             reader = csv.DictReader(csvfile)
 
-#         for data in data_list:
-#             try:
-#                 data.pop('id', None)
-#                 data.pop('cost_of_living', None)
-#                 data.pop('health_care', None)
+#             for row in reader:
+#                 try:
+#                     # Extract required fields from the CSV row
+#                     city_name = row.get('city')
+#                     state_name = row.get('state_name')
+#                     state_code = row.get('state_code')
 
-#                 city_name = data.get('city')
-#                 state_name = data.get('state_name')
-#                 state_code = data.get('state_code')
+#                     if not city_name or not state_name or not state_code:
+#                         return {
+#                             "success": False,
+#                             "message": "Missing required fields: city, state_name, or state_code in CSV row."
+#                         }
 
-#                 if not city_name or not state_name or not state_code:
-#                     return {"success": False, "message": "Missing required fields: city, state_name, or state_code."}
+#                     # Check if the city exists in the city list database
+#                     city_list = city_list_db.query(CityMetricsQuery).filter(
+#                         CityMetricsQuery.city == city_name,
+#                         CityMetricsQuery.state_name == state_name,
+#                         CityMetricsQuery.state_code == state_code
+#                     ).first()
 
-#                 city_list = city_list_db.query(CityMetricsQuery).filter(
-#                     CityMetricsQuery.city == city_name,
-#                     CityMetricsQuery.state_name == state_name,
-#                     CityMetricsQuery.state_code == state_code
-#                 ).first()
+#                     if not city_list:
+#                         return {
+#                             "success": False,
+#                             "message": f"City {city_name}, {state_name} not found in city list database."
+#                         }
 
-#                 if not city_list:
-#                     return {"success": False, "message": f"City {city_name}, {state_name} not found in city list database."}
+#                     search_id = city_list.id
 
-#                 search_id = city_list.id
-#                 city_data = CityMetrics(**data, search_id=search_id)
-#                 db.add(city_data)
+#                     # Prepare the city data for insertion
+#                     city_data = CityMetrics(
+#                         search_id=search_id,
+#                         state_name=row.get('state_name'),
+#                         state_code=row.get('state_code'),
+#                         home_price=float(row.get('home_price', 0)),
+#                         property_tax=float(row.get('property_tax', 0)),
+#                         home_appreciation_rate=float(row.get('home_appreciation_rate', 0)),
+#                         price_per_square_foot= float(row.get('price_per_square_foot', 0)) if row.get('price_per_square_foot', 0) else None,
+#                         education=int(row.get('education', 0)),
+#                         healthcare_fitness=int(row.get('healthcare_fitness', 0)),
+#                         weather_grade=int(row.get('weather_grade', 0)),
+#                         air_quality_index=int(row.get('air_quality_index', 0)),
+#                         commute_transit_score=int(row.get('commute_transit_score', 0)),
+#                         accessibility=int(row.get('accessibility', 0)),
+#                         culture_entertainment=int(row.get('culture_entertainment', 0)),
+#                         unemployment_rate=float(row.get('unemployment_rate', 0)),
+#                         recent_job_growth=float(row.get('recent_job_growth', 0)),
+#                         future_job_growth_index=float(row.get('future_job_growth_index', 0)),
+#                         median_household_income=float(row.get('median_household_income', 0)),
+#                         state_income_tax=float(row.get('state_income_tax', 0)),
+#                         utilities=float(row.get('utilities', 0)),
+#                         food_groceries=float(row.get('food_groceries', 0)),
+#                         sales_tax=float(row.get('sales_tax', 0)),
+#                         transportation_cost=float(row.get('transportation_cost', 0)),
+#                         city=row.get('city')
+#                     )
 
-#             except Exception as e:
-#                 db.rollback()
-#                 return {"success": False, "message": f"An error occurred while processing city {data.get('city')}: {str(e)}"}
+#                     db.add(city_data)
 
-#         db.commit()
-#         return {"success": True, "message": "All city data added successfully."}
+#                 except Exception as e:
+#                     db.rollback()
+#                     return {
+#                         "success": False,
+#                         "message": f"An error occurred while processing city {row.get('city')}: {str(e)}"
+#                     }
+
+#             db.commit()
+#             return {"success": True, "message": "All city data added successfully."}
 
 #     except Exception as e:
 #         return {"success": False, "message": f"An error occurred: {str(e)}"}
