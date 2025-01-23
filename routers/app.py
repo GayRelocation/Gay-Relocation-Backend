@@ -122,7 +122,7 @@ async def handle_query(request: QueryRequest, db: Session = Depends(get_verified
             "transportation_cost": str(int(city_data["transportation_cost"])),
             "unemployment_rate": f"{city_data['unemployment_rate']}%",
             "utilities": str(int(city_data["utilities"])),
-            "weather_grade": str(city_data["weather_grade"]),
+            "weather_grade": str(int(city_data["weather_grade"])),
         }
 
         return city
