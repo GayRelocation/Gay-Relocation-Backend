@@ -5,5 +5,4 @@ backup
 Data
 env
 __pycache__/
-Raw_Blog_Data
 test.py
