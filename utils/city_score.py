@@ -1,24 +1,61 @@
-max_percentage = 99
-min_percentage = 55
+# max_percentage = 99
+# min_percentage = 55
+
+# def clamp_value(val, lower=min_percentage, upper=max_percentage):
+#     """Clamp a final score into [55, 99]."""
+#     return max(lower, min(upper, val))
+
+# def clamp_ratio(ratio, lower=0.5, upper=2.0):
+#     """Clamp a ratio into [0.5, 2.0]."""
+#     return max(lower, min(upper, ratio))
+
+# def linear_transform(ratio):
+#     """
+#     Transform a ratio in [0.5, 2.0] to a score in [55, 99].
+#       ratio=0.5 => 55
+#       ratio=1.0 => ~77
+#       ratio=2.0 => 99
+#     """
+#     slope = 44 / 1.5  # ~29.33
+#     intercept = 77 - slope
+#     return intercept + slope * ratio
+
+# def get_ratio(origin_val, destination_val, higher_is_better=True):
+#     """
+#     Returns a ratio that is >1 if the destination is 'better' based on direction:
+#       - If higher_is_better=True:  ratio = (destination_val / origin_val)
+#       - If higher_is_better=False: ratio = (origin_val / destination_val)
+
+#     Then clamps it to [0.5, 2.0].
+#     """
+#     if origin_val == 0 and destination_val == 0:
+#         return 1.0
+#     if origin_val == 0:
+#         return 2.0
+#     if destination_val == 0:
+#         return 0.5
+
+#     if higher_is_better:
+#         ratio = destination_val / origin_val
+#     else:
+#         ratio = origin_val / destination_val
+
+#     return clamp_ratio(ratio)
+
+max_percentage = 100
+min_percentage = 0
 
 def clamp_value(val, lower=min_percentage, upper=max_percentage):
-    """Clamp a final score into [55, 99]."""
+    """Clamp a final score into [0, 100]."""
     return max(lower, min(upper, val))
 
-def clamp_ratio(ratio, lower=0.5, upper=2.0):
-    """Clamp a ratio into [0.5, 2.0]."""
+def clamp_ratio(ratio, lower=0.0, upper=2.0):
+    """Clamp a ratio into [0.0, 2.0]."""
     return max(lower, min(upper, ratio))
 
 def linear_transform(ratio):
-    """
-    Transform a ratio in [0.5, 2.0] to a score in [55, 99].
-      ratio=0.5 => 55
-      ratio=1.0 => ~77
-      ratio=2.0 => 99
-    """
-    slope = 44 / 1.5  # ~29.33
-    intercept = 77 - slope
-    return intercept + slope * ratio
+    
+    return 50 * ratio
 
 def get_ratio(origin_val, destination_val, higher_is_better=True):
     """
@@ -33,7 +70,7 @@ def get_ratio(origin_val, destination_val, higher_is_better=True):
     if origin_val == 0:
         return 2.0
     if destination_val == 0:
-        return 0.5
+        return 0.0
 
     if higher_is_better:
         ratio = destination_val / origin_val
